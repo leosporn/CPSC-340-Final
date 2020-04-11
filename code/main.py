@@ -8,7 +8,16 @@ TRAIN_LABELS_FILENAME = 'train_labels_512.pk'
 TEST_IMAGES_FILENAME = 'test_images_512.pk'
 
 
-def load_data(adjust=True, save_images=True):
+def load_data(adjust=True, save_images=False):
+    """
+    Load training and test data.
+    Optionally re-scale data so it is between 0 and 1 (originally -1 and -0.9921).
+    Optionally save images for visualization.
+
+    :param adjust: Whether to re-scale data.
+    :param save_images: Whether to save images.
+    :return: train data, train labels, test data.
+    """
     def load_pk(filename):
         with open(os.path.join('..', 'data', filename), 'rb') as f:
             return pickle.load(f, encoding='bytes')
@@ -28,9 +37,13 @@ def load_data(adjust=True, save_images=True):
         if not os.path.exists(os.path.join('..', 'images')):
             os.makedirs(os.path.join('..', 'images'))
         for i, (img, label) in enumerate(zip(train_imgs_, train_labels_)):
-            save_image(img, os.path.join('..', 'images', f'train_{i:02d}_{int(label):d}.png'))
+            filename = os.path.join('..', 'images', f'train_{i:02d}_{int(label):d}.png')
+            if not os.path.exists(filename):
+                save_image(img, filename)
         for i, img in enumerate(test_imgs_):
-            save_image(img, os.path.join('..', 'images', f'test_{i:02d}_{"?":s}.png'))
+            filename = os.path.join('..', 'images', f'test_{i:02d}_{"?":s}.png')
+            if not os.path.exists(filename):
+                save_image(img, filename)
 
     return train_imgs_, train_labels_, test_imgs_
 
