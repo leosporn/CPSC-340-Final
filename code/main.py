@@ -50,3 +50,4 @@ def load_data(adjust=True, save_images=False):
 
 if __name__ == '__main__':
     train_imgs, train_labels, test_imgs = load_data()
+    
