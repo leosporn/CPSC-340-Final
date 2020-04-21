@@ -8,16 +8,7 @@ def output_images(adjust=True, save_images=True):
     #TRAIN_IMAGES_FILENAME = 'train_images_512.pk'
     TRAIN_IMAGES_FILENAME = 'saved_dataset.pk'
     TRAIN_LABELS_FILENAME = 'train_labels_512.pk'
-    TEST_IMAGES_FILENAME = 'test_images_512.pk'
-    """
-    Load training and test data.
-    Optionally re-scale data so it is between 0 and 1 (originally -1 and -0.9921).
-    Optionally save images for visualization.
 
-    :param adjust: Whether to re-scale data.
-    :param save_images: Whether to save images.
-    :return: train data, train labels, test data.
-    """
     def load_pk(filename):
         with open(os.path.join('..', 'data', filename), 'rb') as f:
             return pickle.load(f, encoding='bytes')
@@ -27,12 +18,10 @@ def output_images(adjust=True, save_images=True):
 
     train_imgs_ = load_pk(TRAIN_IMAGES_FILENAME)
     train_labels_ = load_pk(TRAIN_LABELS_FILENAME)
-    test_imgs_ = load_pk(TEST_IMAGES_FILENAME)
 
     print(train_imgs_.shape)
     if adjust:
         train_imgs_ = adjust_window(train_imgs_)
-        test_imgs_ = adjust_window(test_imgs_)
 
     if save_images:
         if not os.path.exists(os.path.join('..', 'out_images')):
@@ -42,4 +31,4 @@ def output_images(adjust=True, save_images=True):
             if not os.path.exists(filename):
                 save_image(img, filename)
 
-    return train_imgs_, train_labels_, test_imgs_
+    return train_imgs_, train_labels_
