@@ -131,3 +131,4 @@ dmypy.json
 /data/train_images_512.pk
 /data/train_labels_512.pk
 /images/
+/leo/test/
