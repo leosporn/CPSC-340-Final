@@ -164,22 +164,23 @@ if __name__ == '__main__':
     X_train = X_train[:, None, :, :]
     X_valid = X_valid[:, None, :, :]
     X_test = X_test[:, None, :, :]
-    # Building model
-    model = Net()
-    optimizer = Adam(model.parameters(), lr=0.07)
-    criterion = CrossEntropyLoss()
-    if model_verbose:
-        print('Model:')
-        print(model)
-    # Training
-    if verbose:
-        print(f'{"Training model...":30s}')
-    for epoch in range(3):
-        optimizer.zero_grad()
-        y_hat = model(X_train)
-        loss_train = criterion(y_hat, y_train)
-        loss_train.backward()
-        optimizer.step()
-        loss = loss_train.item()
-        if train_verbose:
-            print(f'\tEpoch {epoch: 3d}: loss = {loss:.2f}')
+    # This code still doesn't work
+    # # Building model
+    # model = Net()
+    # optimizer = Adam(model.parameters(), lr=0.07)
+    # criterion = CrossEntropyLoss()
+    # if model_verbose:
+    #     print('Model:')
+    #     print(model)
+    # # Training
+    # if verbose:
+    #     print(f'{"Training model...":30s}')
+    # for epoch in range(3):
+    #     optimizer.zero_grad()
+    #     y_hat = model(X_train)
+    #     loss_train = criterion(y_hat, y_train)
+    #     loss_train.backward()
+    #     optimizer.step()
+    #     loss = loss_train.item()
+    #     if train_verbose:
+    #         print(f'\tEpoch {epoch: 3d}: loss = {loss:.2f}')
