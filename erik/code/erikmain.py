@@ -132,6 +132,17 @@ def load_data(adjust=True, save_images=False):
 if __name__ == '__main__':
     train_imgs, train_labels, test_imgs = load_data()
 
+    images2 = ["/Users/Zoidberg/Desktop/CPSC-340-Final/images/test_00_?.png", "/Users/Zoidberg/Desktop/CPSC-340-Final/images/test_01_?.png",
+ "/Users/Zoidberg/Desktop/CPSC-340-Final/images/test_02_?.png", "/Users/Zoidberg/Desktop/CPSC-340-Final/images/test_03_?.png", 
+ "/Users/Zoidberg/Desktop/CPSC-340-Final/images/test_04_?.png", "/Users/Zoidberg/Desktop/CPSC-340-Final/images/test_05_?.png", 
+ "/Users/Zoidberg/Desktop/CPSC-340-Final/images/test_06_?.png", "/Users/Zoidberg/Desktop/CPSC-340-Final/images/test_07_?.png", 
+ "/Users/Zoidberg/Desktop/CPSC-340-Final/images/test_08_?.png", "/Users/Zoidberg/Desktop/CPSC-340-Final/images/test_09_?.png", 
+ "/Users/Zoidberg/Desktop/CPSC-340-Final/images/test_10_?.png", "/Users/Zoidberg/Desktop/CPSC-340-Final/images/test_11_?.png", 
+ "/Users/Zoidberg/Desktop/CPSC-340-Final/images/test_12_?.png", "/Users/Zoidberg/Desktop/CPSC-340-Final/images/test_13_?.png", 
+ "/Users/Zoidberg/Desktop/CPSC-340-Final/images/test_14_?.png", "/Users/Zoidberg/Desktop/CPSC-340-Final/images/test_15_?.png", 
+ "/Users/Zoidberg/Desktop/CPSC-340-Final/images/test_16_?.png", "/Users/Zoidberg/Desktop/CPSC-340-Final/images/test_17_?.png",
+ "/Users/Zoidberg/Desktop/CPSC-340-Final/images/test_18_?.png", "/Users/Zoidberg/Desktop/CPSC-340-Final/images/test_19_?.png"]
+
     # Specify transforms using torchvision.transforms as transforms
     librarytransformations = transforms.Compose([
         transforms.Resize(255),
@@ -148,10 +159,21 @@ if __name__ == '__main__':
     train_loader2 = torch.utils.data.DataLoader(train_labels, batch_size=20, shuffle=False)
     # val_loader = torch.utils.data.DataLoader(test_imgs, batch_size =20, shuffle=True)
 
-    vision.datasets.MNIST('../test', train=True, transform=None, target_transform=None, download=True)
+    # vision.datasets.MNIST('../test', train=True, transform=None, target_transform=None, download=True)
 
     # Get pretrained model using torchvision.models as models 
-    model = models.densenet161(pretrained=True)
+
+    # Model class must be defined somewhere
+    # model = torch.load("/Users/Zoidberg/Documents/CPSC-340-Final/erik/model")
+    # model.eval()
+
+
+
+
+
+
+
+    model = models.resnet18(pretrained=True) # resnet18 densenet161
     # Turn off training for their parameters
     for param in model.parameters():
         param.requires_grad = False
@@ -205,7 +227,17 @@ if __name__ == '__main__':
         
     # Evaluating the model
     model.eval()
-    counter = 0
+    torch.save(model, "/Users/Zoidberg/Documents/CPSC-340-Final/erik/resnet18model")
+
+
+
+
+
+
+
+
+
+    # counter = 0
     # Tell torch not to calculate gradients
     # with torch.no_grad():
     #     for inputs, labels in val_loader:
@@ -228,19 +260,29 @@ if __name__ == '__main__':
     #         print(counter, "/", len(val_loader))
     
     # Get the average loss for the entire epoch
-    train_loss = train_loss/len(train_loader.dataset)
+    # train_loss = train_loss/len(train_loader.dataset)
     # valid_loss = val_loss/len(val_loader.dataset)    # Print out the information
     # print('Accuracy: ', accuracy/len(val_loader))
     # print('Epoch: {} \tTraining Loss: {:.6f} \tValidation Loss: {:.6f}'.format(epoch, train_loss, valid_loss))
-
-model.eval()
+# 
+# model.eval()
 
 # Process Image
-image = process_image("/Users/Zoidberg/Desktop/CPSC-340-Final/images/train_69_1.png")# Give image to model to predict output
-top_prob, top_class = predict(image, model)# Show the image
-show_image(image)# Print the results
-print("cat")
-print("The model is ", top_prob*100, "% certain that the image has a predicted class of ", top_class  )
+# image = process_image("/Users/Zoidberg/Desktop/CPSC-340-Final/images/train_69_1.png")# Give image to model to predict output
+# top_prob, top_class = predict(image, model)# Show the image
+# show_image(image)# Print the results
+# print("cat")
+# print("The model is ", top_prob*100, "% certain that the image has a predicted class of ", top_class  )
+
+
+    i = 0
+    for imagename in images2:
+        image = process_image(imagename)
+        top_prob, top_class = predict(image, model)# Show the image
+        show_image(image)# Print the results
+        print(i)
+        print("The model is ", top_prob*100, "% certain that the image has a predicted class of ", top_class  )
+        i = i+1
 
 
 
