@@ -27,12 +27,16 @@ from keras.models import Sequential
 
 # Verbose levels
 VERBOSE = {
-    'progress': True,
-    'augmenting': False,
+    'progress': True,  # Prints progress along the way
+    'augmenting': False,  # Notify whenever an image transformation goes wrong
+    'verify': True,  # Shows an image of representative transformed images
 }
 
 # Pathnames and filenames
-DIR = {'data': os.path.join('..', 'data'), 'images': os.path.join('..', 'images')}
+DIR = {
+    'data': os.path.join('..', 'data'),
+    'images': os.path.join('..', 'images')
+}
 FILENAMES = {
     'X_train': os.path.join(DIR['data'], 'train_images_512.pk'),
     'y_train': os.path.join(DIR['data'], 'train_labels_512.pk'),
@@ -47,15 +51,23 @@ SIZE = {'raw': 512, 'final': 256}  # size of raw data and data after downsamplin
 TRAIN_VALID_RATIO = 2 / 1  # i.e. ratio of training data : validation data = 2:1
 
 # Parameters for data augmentation
-N_TRAIN = 1000
-POS_NEG_RATIO = 1 / 1  # negative : positive samples in augmented training set = 1:1
+N_TRAIN = 1000  # Train using n = 1000
+POS_NEG_RATIO = 1 / 1  # positive:negative samples in augmented training set = 1:1
+# (may be backwards)
 
 # Parameters for data augmentation
 TRANSFORMATIONS = torchvision.transforms.Compose([
+    # Horizontal flip with probability 50%
     torchvision.transforms.RandomHorizontalFlip(p=0.5),
-    torchvision.transforms.RandomAffine(degrees=15, translate=(0.02, 0.02), scale=(1, 1.15)),
+    # Rotate by up to 15 degrees either way
+    # Translate by ± 2% of image size
+    # Expand by up to 15%
+    torchvision.transforms.RandomAffine(degrees=15, translate=(0.02, 0.02), scale=(1, 1.15)),  # rotation +
+    # Adjust contrast and brightness by up to 40% and 30% respectively
     torchvision.transforms.ColorJitter(contrast=0.4, brightness=0.3),
+    # Should randomly add black boxes, but doesn't seem to work
     torchvision.transforms.RandomErasing(p=0.3, scale=(0.01, 0.03), ratio=(1 / 3, 3)),
+    # Convert back to torch.tensor
     torchvision.transforms.ToTensor(),
 ])
 
@@ -87,13 +99,13 @@ def load_y(filename):
     return y.type(torch.long)  # convert to integer
 
 
-# Functions to preprocess data
-def downsample(X):
-    f = SIZE['raw'] // SIZE['final']
-    for i in range(SIZE['final']):
-        for j in range(SIZE['final']):
+# Function to downsample data (i.e. from m=512x512 to n=256x256)
+def downsample(X, m, n):
+    f = m // n
+    for i in range(n):
+        for j in range(n):
             X[:, :, i, j] = X[:, :, i * f:(i + 1) * f, j * f:(j + 1) * f].mean(-1).mean(-1)
-    return X[:, :, :SIZE['final'], :SIZE['final']]
+    return X[:, :, :n, :n]
 
 
 # Function to split data into training and validation sets
@@ -112,6 +124,8 @@ def split_train_valid(X, y):
 
 # Function to augment training data
 def augment(X_in, y_in, transform_fn):
+    # Helper to transform a specific image
+    # Continues to try for each image until it is successful (takes 1-3 tries)
     def transform(im_):
         while True:
             try:
@@ -147,9 +161,9 @@ def display(X, h=4, w=5):
 
 # ============================================================
 
-# ==================== 4. Load and preprocess data ====================
-
 if __name__ == '__main__':
+    # ==================== 4. Load and preprocess data ====================
+
     # Load raw data
     verbose_print(f'{"Loading data...":30s}', VERBOSE['progress'], end='')
     X_train = load_X(FILENAMES['X_train'])
@@ -159,8 +173,8 @@ if __name__ == '__main__':
 
     # Downsample data
     verbose_print(f'{"Downsampling data...":30s}', VERBOSE['progress'], end='')
-    X_train = downsample(X_train)
-    X_test = downsample(X_test)
+    X_train = downsample(X_train, SIZE['raw'], SIZE['final'])
+    X_test = downsample(X_test, SIZE['raw'], SIZE['final'])
     verbose_print('DONE', VERBOSE['progress'])
 
     # Split training data into training and validation sets
@@ -174,36 +188,50 @@ if __name__ == '__main__':
     verbose_print('DONE', VERBOSE['progress'])
 
     # Plot a sample of the augmented data for visual inspection
-    display(X_train)
+    if VERBOSE['verify']:
+        display(X_train)
 
     # Convert data to numpy arrays and reshape
-    X_train = np.array(X_train).reshape((-1, SIZE['final'], SIZE['final'], 1))
+    X_train = np.array(X_train).reshape((-1, 1, SIZE['final'], SIZE['final'])).transpose((1, 2, 0))
+    X_valid = np.array(X_valid).reshape((-1, 1, SIZE['final'], SIZE['final'])).transpose((1, 2, 0))
+    X_test = np.array(X_test).reshape((-1, 1, SIZE['final'], SIZE['final'])).transpose((1, 2, 0))
     y_train = np.array(y_train)
-    X_valid = np.array(X_valid).reshape((-1, SIZE['final'], SIZE['final'], 1))
     y_valid = np.array(y_valid)
-    X_test = np.array(X_test).reshape((-1, SIZE['final'], SIZE['final'], 1))
 
     # ============================================================
 
     # ==================== 5. Build CNN ====================
 
+    # Initialize model
     model = Sequential()
-    model.add(Conv2D(256, kernel_size=3, activation='relu', input_shape=X_train[0].shape))
+
+    # 200 3x3 convolutional filters w/ 2x2 max pool layer
+    model.add(Conv2D(200, kernel_size=3, activation='relu', input_shape=(1, SIZE['final'], SIZE['final'])))
     model.add(MaxPooling2D(2))
-    model.add(Conv2D(64, kernel_size=3, activation='relu'))
+    # 50 3x3 convolutional filters w/ 2x2 max pool layer
+    model.add(Conv2D(50, kernel_size=3, activation='relu'))
     model.add(MaxPooling2D(2))
-    model.add(Conv2D(32, kernel_size=3, activation='relu'))
+    # 30 3x3 convolutional filters w/ 2x2 max pool layer
+    model.add(Conv2D(30, kernel_size=3, activation='relu'))
     model.add(MaxPooling2D(2))
+    # Dense layer w/ 15 nodes
     model.add(Flatten())
-    model.add(Dense(16, activation='relu'))
+    model.add(Dense(15, activation='relu'))
+    # Final activation
     model.add(Dense(1, activation='sigmoid'))
-    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+    # Compile model
+    model.compile(
+        optimizer='adam',
+        loss='binary_crossentropy',
+        metrics=['accuracy'],
+    )
 
     # ============================================================
 
     # ==================== 6. Fit the CNN ====================
 
-    model.fit(X_train, y_train, batch_size=10, epochs=16, validation_data=(X_valid, y_valid))
+    model.fit(X_train, y_train, batch_size=10, epochs=10, validation_data=(X_valid, y_valid))
     score = model.evaluate(X_valid, y_valid)
     print(f'Accuracy on validation set: {100 * score[-1]:.2f}%')
 
