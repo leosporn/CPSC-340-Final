@@ -98,16 +98,16 @@ def downsample(X):
 
 # Function to split data into training and validation sets
 def split_train_valid(X, y):
-    def split(X, y, f):
-        idx, k = torch.randperm(y.size(0)), round(y.size(0) * f)
-        return X[idx[:k]], y[idx[:k]], X[idx[k:]], y[idx[k:]]
+    def split(X_, y_, f_):
+        idx, k = torch.randperm(y_.size(0)), round(y_.size(0) * f_)
+        return X_[idx[:k]], y_[idx[:k]], X_[idx[k:]], y_[idx[k:]]
 
     f = TRAIN_VALID_RATIO / (1 + TRAIN_VALID_RATIO)
     X_train_0, y_train_0, X_valid_0, y_valid_0 = split(X[y == 0], y[y == 0], f)
     X_train_1, y_train_1, X_valid_1, y_valid_1 = split(X[y == 1], y[y == 1], f)
-    X_train, y_train = torch.cat((X_train_0, X_train_1)), torch.cat((y_train_0, y_train_1))
-    X_valid, y_valid = torch.cat((X_valid_0, X_valid_1)), torch.cat((y_valid_0, y_valid_1))
-    return X_train, y_train, X_valid, y_valid
+    X_train_, y_train_ = torch.cat((X_train_0, X_train_1)), torch.cat((y_train_0, y_train_1))
+    X_valid_, y_valid_ = torch.cat((X_valid_0, X_valid_1)), torch.cat((y_valid_0, y_valid_1))
+    return X_train_, y_train_, X_valid_, y_valid_
 
 
 # Function to augment training data
@@ -192,7 +192,7 @@ if __name__ == '__main__':
     model.add(MaxPooling2D(2))
     model.add(Conv2D(32, kernel_size=3, activation='relu'))
     model.add(MaxPooling2D(2))
-    model.add(Conv2D(32, kernel_size=3, activation='relu'))
+    model.add(Conv2D(16, kernel_size=3, activation='relu'))
     model.add(MaxPooling2D(2))
     model.add(Flatten())
     model.add(Dense(16, activation='relu'))
