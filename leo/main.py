@@ -206,7 +206,7 @@ if __name__ == '__main__':
     model = Sequential()
 
     # 200 3x3 convolutional filters w/ 2x2 max pool layer
-    model.add(Conv2D(200, kernel_size=3, activation='relu', input_shape=(1, SIZE['final'], SIZE['final'])))
+    model.add(Conv2D(200, kernel_size=3, activation='relu', input_shape=(SIZE['final'], SIZE['final'], 1)))
     model.add(MaxPooling2D(2))
     # 50 3x3 convolutional filters w/ 2x2 max pool layer
     model.add(Conv2D(50, kernel_size=3, activation='relu'))
