@@ -29,7 +29,7 @@ from keras.models import Sequential
 VERBOSE = {
     'progress': True,  # Prints progress along the way
     'augmenting': False,  # Notify whenever an image transformation goes wrong
-    'verify': True,  # Shows an image of representative transformed images
+    'verify': False,  # Shows an image of representative transformed images
 }
 
 # Pathnames and filenames
@@ -192,9 +192,9 @@ if __name__ == '__main__':
         display(X_train)
 
     # Convert data to numpy arrays and reshape
-    X_train = np.array(X_train).reshape((-1, 1, SIZE['final'], SIZE['final'])).transpose((1, 2, 0))
-    X_valid = np.array(X_valid).reshape((-1, 1, SIZE['final'], SIZE['final'])).transpose((1, 2, 0))
-    X_test = np.array(X_test).reshape((-1, 1, SIZE['final'], SIZE['final'])).transpose((1, 2, 0))
+    X_train = np.array(X_train).reshape((-1, 1, SIZE['final'], SIZE['final'])).transpose((0, 2, 3, 1))
+    X_valid = np.array(X_valid).reshape((-1, 1, SIZE['final'], SIZE['final'])).transpose((0, 2, 3, 1))
+    X_test = np.array(X_test).reshape((-1, 1, SIZE['final'], SIZE['final'])).transpose((0, 2, 3, 1))
     y_train = np.array(y_train)
     y_valid = np.array(y_valid)
 
