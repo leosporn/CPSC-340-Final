@@ -11,8 +11,8 @@
 import os
 import pickle
 
-import matplotlib.pyplot as plt
 # numpy and matplotlib.pyplot to visualize data
+import matplotlib.pyplot as plt
 import numpy as np
 # Torch and PIL libraries for image preprocessing
 import torch
@@ -47,14 +47,14 @@ SIZE = {'raw': 512, 'final': 256}  # size of raw data and data after downsamplin
 TRAIN_VALID_RATIO = 2 / 1  # i.e. ratio of training data : validation data = 2:1
 
 # Parameters for data augmentation
-N_TRAIN = 1024
+N_TRAIN = 1000
 POS_NEG_RATIO = 1 / 1  # negative : positive samples in augmented training set = 1:1
 
 # Parameters for data augmentation
 TRANSFORMATIONS = torchvision.transforms.Compose([
     torchvision.transforms.RandomHorizontalFlip(p=0.5),
     torchvision.transforms.RandomAffine(degrees=15, translate=(0.02, 0.02), scale=(1, 1.15)),
-    torchvision.transforms.ColorJitter(contrast=0.4, brightness=0.4),
+    torchvision.transforms.ColorJitter(contrast=0.4, brightness=0.3),
     torchvision.transforms.RandomErasing(p=0.3, scale=(0.01, 0.03), ratio=(1 / 3, 3)),
     torchvision.transforms.ToTensor(),
 ])
@@ -190,9 +190,9 @@ if __name__ == '__main__':
     model = Sequential()
     model.add(Conv2D(256, kernel_size=3, activation='relu', input_shape=X_train[0].shape))
     model.add(MaxPooling2D(2))
-    model.add(Conv2D(32, kernel_size=3, activation='relu'))
+    model.add(Conv2D(64, kernel_size=3, activation='relu'))
     model.add(MaxPooling2D(2))
-    model.add(Conv2D(16, kernel_size=3, activation='relu'))
+    model.add(Conv2D(32, kernel_size=3, activation='relu'))
     model.add(MaxPooling2D(2))
     model.add(Flatten())
     model.add(Dense(16, activation='relu'))
@@ -203,5 +203,8 @@ if __name__ == '__main__':
 
     # ==================== 6. Fit the CNN ====================
 
-    model.fit(X_train, y_train, batch_size=16, epochs=8, validation_data=(X_valid, y_valid))
+    model.fit(X_train, y_train, batch_size=10, epochs=16, validation_data=(X_valid, y_valid))
     score = model.evaluate(X_valid, y_valid)
+    print(f'Accuracy on validation set: {100 * score[-1]:.2f}%')
+
+    # ============================================================
