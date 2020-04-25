@@ -145,7 +145,7 @@ def makeThreeFolds(X,y):
     Xtrain_3 = X[a[a%folds != 3]]
     ytrain_3 = y[a[a%folds != 3]]
 
-    return np.stack(Xtrain_1, Xtrain_2, Xtrain_3), np.stack(ytrain_1, ytrain_2, ytrain_3), np.stack(Xvalid_1, Xvalid_2, Xvalid_3), np.stack(yvalid_1, yvalid_2, yvalid_3)
+    return [Xtrain_1, Xtrain_2, Xtrain_3], [ytrain_1, ytrain_2, ytrain_3], [Xvalid_1, Xvalid_2, Xvalid_3], [yvalid_1, yvalid_2, yvalid_3]
 
 
 
