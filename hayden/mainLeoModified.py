@@ -124,7 +124,7 @@ def split_train_valid(X, y):
 def makeThreeFolds(X,y):
     folds = 3
     n = X.shape[0]
-    a = np.arange(n)
+    a = np.arange(n - n%3)#ignore what we can't split evenly??
     def shuffle(X_, y_):
         idx = torch.randperm(y_.size(0))
         return X_[idx[:]], y_[idx[:]]
@@ -211,7 +211,7 @@ if __name__ == '__main__':
     verbose_print('DONE', VERBOSE['progress'])
 
     totscore = 0
-    for i in range(3):
+    for i in [2,1,0]:
         X_train = X_trains[i]
         y_train = y_trains[i]
         X_valid = X_valids[i]
@@ -263,12 +263,40 @@ if __name__ == '__main__':
 
         # ============================================================
 
-        # ==================== 6. Fit the CNN ====================
+        #========Make a set of models================
+        # Initialize models
+        #same model diff data?
+        #X_train = load_X(FILENAMES['X_train'])
+        #y_train = load_y(FILENAMES['y_train'])
+        #X_train = downsample(X_train, SIZE['raw'], SIZE['final'])
+        #X_train, y_train = augment(X_train, y_train, TRANSFORMATIONS)
+        #bootstrap sample X train, maybe remake train data
+        #not sure if we want to bootstrap before generating rotations or not
+        def ensemblePredict(XtoPred,X_valid,y_valid, numEnsembling = 10):
+            preds = np.zeros((XtoPred.shape[0], numEnsembling))
+            for i in range(numEnsembling):
+                print("making bootstrap of all training data") #we can change this to exclude validation set if we want
+                np.random.seed(i)
+                boot_idcs = np.random.randint(X_train.shape[0], size=X_train.shape[0])
+                bootX = X_train[boot_idcs]
+                bootY = y_train[boot_idcs]
+                model.fit(bootX, bootY, batch_size=10, epochs=10, validation_data=(X_valid, y_valid))
+                print("finished fitting model number " +str(i))
+                preds[i] = model.predict(XtoPred)
+            return np.mode(preds, axis=1)
+        #bootstrap samples
 
-        model.fit(X_train, y_train, batch_size=10, epochs=10, validation_data=(X_valid, y_valid))
-        score = model.evaluate(X_valid, y_valid)
+
+        # ==================== 6. Fit the CNN ====================
+        preds = ensemblePredict(X_valid, X_valid, y_valid) #first arg will be X_test when we actually run this - I hope having validation data doesn't bias the fitting
+        score = np.mean(preds != y_valid) * 100
         print(f'Accuracy on validation set: {100 * score[-1]:.2f}%')
-        totscore += 100 * score[-1]
+        totscore+=score
+
+        #model.fit(X_train, y_train, batch_size=10, epochs=10, validation_data=(X_valid, y_valid))
+        #score = model.evaluate(X_valid, y_valid)
+        #print(f'Accuracy on validation set: {100 * score[-1]:.2f}%')
+        #totscore += 100 * score[-1]
 
         # ============================================================
     print(f'Accuracy across validation sets: {(totscore/3):.2f}%')
