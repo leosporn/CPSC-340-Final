@@ -13,6 +13,8 @@ Confirmed = 5
 Deaths = 6
 Recovered = 7
 
+X = data.values
+
 # Get Unique provinces/states, done by checking last day
 places = X[X[:,Date] == "04/25/2020"]
 uniquePlaces = np.unique(places[:,2])
