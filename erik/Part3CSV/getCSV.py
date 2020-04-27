@@ -3,7 +3,7 @@ import numpy as np
 
 # Requires that you put the covid_19_data_CA_US_no_cities.csv file into the common data folder
 # Justin sent this file over discord
-data = pd.read_csv('../data/covid_19_data_CA_US_no_cities.csv')
+data = pd.read_csv('../../data/covid_19_data_CA_US_no_cities.csv')
 
 # Important Columns and their Column numbers
 Date = 1
