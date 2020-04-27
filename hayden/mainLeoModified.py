@@ -21,6 +21,9 @@ from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
 # Keras libraries for CNN
 from keras.models import Sequential
 
+# library for ensembling (mode)
+from scipy import stats
+
 # ============================================================
 
 # ==================== 2. Define constants ====================
@@ -124,7 +127,8 @@ def split_train_valid(X, y):
 def makeThreeFolds(X,y):
     folds = 3
     n = X.shape[0]
-    a = np.arange(n - n%3)#ignore what we can't split evenly??
+    a = np.arange(n)
+    #a = np.arange(n - n%3)#ignore what we can't split evenly??
     def shuffle(X_, y_):
         idx = torch.randperm(y_.size(0))
         return X_[idx[:]], y_[idx[:]]
@@ -140,10 +144,10 @@ def makeThreeFolds(X,y):
     Xtrain_2 = X[a[a%folds != 2]]
     ytrain_2 = y[a[a%folds != 2]]
 
-    Xvalid_3 = X[a[a%folds == 3]]
-    yvalid_3 = y[a[a%folds == 3]]
-    Xtrain_3 = X[a[a%folds != 3]]
-    ytrain_3 = y[a[a%folds != 3]]
+    Xvalid_3 = X[a[a%folds == 0]]
+    yvalid_3 = y[a[a%folds == 0]]
+    Xtrain_3 = X[a[a%folds != 0]]
+    ytrain_3 = y[a[a%folds != 0]]
 
     return [Xtrain_1, Xtrain_2, Xtrain_3], [ytrain_1, ytrain_2, ytrain_3], [Xvalid_1, Xvalid_2, Xvalid_3], [yvalid_1, yvalid_2, yvalid_3]
 
@@ -272,7 +276,7 @@ if __name__ == '__main__':
         #X_train, y_train = augment(X_train, y_train, TRANSFORMATIONS)
         #bootstrap sample X train, maybe remake train data
         #not sure if we want to bootstrap before generating rotations or not
-        def ensemblePredict(XtoPred,X_valid,y_valid, numEnsembling = 10):
+        def ensemblePredict(XtoPred,X_valid,y_valid, numEnsembling = 2):
             preds = np.zeros((XtoPred.shape[0], numEnsembling))
             for i in range(numEnsembling):
                 print("making bootstrap of all training data") #we can change this to exclude validation set if we want
@@ -280,17 +284,17 @@ if __name__ == '__main__':
                 boot_idcs = np.random.randint(X_train.shape[0], size=X_train.shape[0])
                 bootX = X_train[boot_idcs]
                 bootY = y_train[boot_idcs]
-                model.fit(bootX, bootY, batch_size=10, epochs=10, validation_data=(X_valid, y_valid))
+                model.fit(bootX, bootY, batch_size=10, epochs=1, validation_data=(X_valid, y_valid))
                 print("finished fitting model number " +str(i))
-                preds[i] = model.predict(XtoPred)
-            return np.mode(preds, axis=1)
+                preds[:,i] = model.predict(XtoPred)[:,0]
+            return stats.mode(preds, axis=1)
         #bootstrap samples
 
 
         # ==================== 6. Fit the CNN ====================
         preds = ensemblePredict(X_valid, X_valid, y_valid) #first arg will be X_test when we actually run this - I hope having validation data doesn't bias the fitting
         score = np.mean(preds != y_valid) * 100
-        print(f'Accuracy on validation set: {100 * score[-1]:.2f}%')
+        print(f'Accuracy on validation set: {100 * score:.2f}%')
         totscore+=score
 
         #model.fit(X_train, y_train, batch_size=10, epochs=10, validation_data=(X_valid, y_valid))
