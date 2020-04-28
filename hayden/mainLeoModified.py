@@ -276,7 +276,7 @@ if __name__ == '__main__':
         #X_train, y_train = augment(X_train, y_train, TRANSFORMATIONS)
         #bootstrap sample X train, maybe remake train data
         #not sure if we want to bootstrap before generating rotations or not
-        def ensemblePredict(XtoPred,X_valid,y_valid, numEnsembling = 2):
+        def ensemblePredict(XtoPred,X_valid,y_valid, numEnsembling = 10):
             preds = np.zeros((XtoPred.shape[0], numEnsembling))
             for i in range(numEnsembling):
                 print("making bootstrap of all training data") #we can change this to exclude validation set if we want
@@ -284,7 +284,7 @@ if __name__ == '__main__':
                 boot_idcs = np.random.randint(X_train.shape[0], size=X_train.shape[0])
                 bootX = X_train[boot_idcs]
                 bootY = y_train[boot_idcs]
-                model.fit(bootX, bootY, batch_size=10, epochs=1, validation_data=(X_valid, y_valid))
+                model.fit(bootX, bootY, batch_size=10, epochs=10, validation_data=(X_valid, y_valid))
                 print("finished fitting model number " +str(i))
                 preds[:,i] = model.predict(XtoPred)[:,0]
             return stats.mode(preds, axis=1)
