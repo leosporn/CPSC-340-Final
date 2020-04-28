@@ -3,6 +3,8 @@ from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import utils
 import numpy as np
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import normalize
 
 
 
@@ -21,27 +23,24 @@ pop = np.matrix(pops.to_numpy(dtype=np.float32).flatten())
 X[:,:-1] = pop.T
 
 N, D = X.shape
-
-'''for i in range(N):
-    print(X[i, :])
-    np.divide(X[i, :], pop[i])
-    print(X[i, :])
-
-print(X)
-'''
-#for i in range(N):
-    #data[i, :] = data[i, :].div(pops[]) 
+X = normalize(X, axis=0)
+X = normalize(X, axis=1)
 
 pcaS = PCA(n_components = 2).fit(X)
 pca = pcaS.transform(X)
 
+
+kmeans = KMeans(n_clusters=4, random_state=0).fit(pca)
+
 plt.figure()
-plt.scatter(pca[:, 0], pca[:, 1])
+#plt.scatter(pca[:, 0], pca[:, 1])
+for i in range(N):
+    plt.plot(pca[i, 0], pca[i, 1], utils.clusterToMarker(kmeans.labels_[i]))
 plt.xlabel("c1")
 plt.ylabel("c2")
 
 
 for i in range(N):
-    plt.annotate(labels[i], (pca[i, 0], pca[i, 1]))
+    plt.annotate(labels[i] + str(kmeans.labels_[i]), (pca[i, 0], pca[i, 1]))
 
 utils.savefig('pca1.png')
