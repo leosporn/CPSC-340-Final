@@ -19,7 +19,8 @@ def clusterToMarker(cluster):
     return c2m[cluster]
 
 def filterLabels(label):
-    whitelist = ["US", "Canada", "Iran", "Italy", "Mainland China", "Spain", "Vietnam", "Finland", "Bahrain", "Iceland", "Andorra", "Luxembourg"]
+    #whitelist = ["US", "Canada", "Iran", "Italy", "Mainland China", "Spain", "Vietnam", "Finland", "Bahrain", "Iceland", "Andorra", "Luxembourg"]
+    whitelist = ["Wyoming", "Michigan", "Alabama", "New York", "Florida", "Washington", "California", "Ontario", "British Columbia", "Quebec", "Arizona", "Hawaii", "Alberta"]
     if (label in whitelist):
         return label
     return ""
